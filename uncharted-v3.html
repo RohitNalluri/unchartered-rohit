@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rohit Nalluri — Uncharted Territories Application</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Sans+3:wght@300;400;600&family=Courier+Prime:wght@400;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    :root {
+      --parchment: #ede8dc;
+      --parchment2: #e4dece;
+      --parchment3: #d8d0be;
+      --ink: #1c1a14;
+      --ink-mid: #3a3628;
+      --ink-light: #6b6450;
+      --ink-faint: #b0a890;
+      --teal: #2d6b58;
+      --teal-hi: #3d8870;
+      --teal-bg: #e8f0ed;
+      --border: #ccc5b0;
+      --border-lt: #ddd8ca;
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans: 'Source Sans 3', system-ui, sans-serif;
+      --mono: 'Courier Prime', 'Courier New', monospace;
+      --nav-h: 68px;
+      --max: 1160px;
+      --pad: clamp(1.5rem, 5vw, 4rem);
+    }
+
+    body {
+      background: var(--parchment);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Topographic contour lines — three offset elliptical centres */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        repeating-radial-gradient(ellipse 1100px 680px at 15% 30%,
+          transparent 0, transparent 34px,
+          rgba(90, 75, 40, 0.09) 35px, transparent 36px),
+        repeating-radial-gradient(ellipse 820px 560px at 82% 68%,
+          transparent 0, transparent 27px,
+          rgba(90, 75, 40, 0.07) 28px, transparent 29px),
+        repeating-radial-gradient(ellipse 560px 400px at 55% 10%,
+          transparent 0, transparent 21px,
+          rgba(90, 75, 40, 0.055) 22px, transparent 23px);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      height: var(--nav-h);
+      background: rgba(237, 232, 220, 0.96);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--pad);
+      gap: 2rem;
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-decoration: none;
+      margin-right: auto;
+      line-height: 1.3;
+    }
+
+    .nav-logo span {
+      display: block;
+      color: var(--ink-light);
+      font-size: 0.52rem;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 700px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--ink);
+    }
+
+    .nav-apply {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      background: var(--teal);
+      color: var(--parchment);
+      padding: 0.5rem 1.3rem;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .nav-apply:hover {
+      background: var(--teal-hi);
+    }
+
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      padding: 0.4rem 0.6rem;
+      flex-direction: column;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .nav-toggle span {
+      display: block;
+      width: 20px;
+      height: 1.5px;
+      background: var(--ink);
+      transition: all 0.25s;
+    }
+
+    .nav-toggle.open span:nth-child(1) {
+      transform: rotate(45deg) translate(4px, 4px);
+    }
+
+    .nav-toggle.open span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .nav-toggle.open span:nth-child(3) {
+      transform: rotate(-45deg) translate(4px, -4px);
+    }
+
+    .mobile-drawer {
+      display: none;
+      position: fixed;
+      top: var(--nav-h);
+      left: 0;
+      right: 0;
+      background: var(--parchment2);
+      border-bottom: 1px solid var(--border);
+      z-index: 199;
+      padding: 1.25rem var(--pad);
+      flex-direction: column;
+    }
+
+    .mobile-drawer.open {
+      display: flex;
+    }
+
+    .mobile-drawer a {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-mid);
+      text-decoration: none;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border-lt);
+      transition: color 0.2s;
+    }
+
+    .mobile-drawer a:last-child {
+      border-bottom: none;
+    }
+
+    .mobile-drawer a:hover {
+      color: var(--teal);
+    }
+
+    /* ── PAGE ── */
+    .page {
+      position: relative;
+      z-index: 1;
+      padding-top: var(--nav-h);
+    }
+
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    /* ── SECTION LABEL ── */
+    .sec-num {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 1.4rem;
+    }
+
+    /* ── TYPE ── */
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 900;
+      line-height: 1.02;
+      color: var(--ink);
+      margin-bottom: 1.5rem;
+    }
+
+    h2 {
+      font-family: var(--serif);
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 1.5rem;
+    }
+
+    h3 {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: var(--ink-mid);
+      font-size: 1rem;
+      line-height: 1.75;
+      margin-bottom: 1.1rem;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    a {
+      color: var(--teal);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    a:hover {
+      border-bottom-color: var(--teal);
+    }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: calc(100vh - var(--nav-h));
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 4rem 0;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-dragon {
+      position: absolute;
+      right: -2rem;
+      bottom: -1rem;
+      width: 52%;
+      max-width: 580px;
+      opacity: 0.06;
+      pointer-events: none;
+    }
+
+    .hero-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5rem;
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 0.1s;
+    }
+
+    .hero-badge {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.9rem;
+    }
+
+    .hero-loc {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+
+    .hero-loc::before {
+      content: '◈  ';
+      color: var(--teal);
+    }
+
+    .hero-name {
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 0.3s;
+    }
+
+    .hero-sub {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: clamp(1.1rem, 2vw, 1.4rem);
+      color: var(--ink-light);
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 0.55s;
+    }
+
+    .hero-role {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-mid);
+      margin-bottom: 0.4rem;
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 0.75s;
+    }
+
+    .hero-hsd {
+      font-family: var(--mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #8b3a2a;
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 0.9s;
+    }
+
+    .scroll-cue {
+      position: absolute;
+      bottom: 2rem;
+      right: 0;
+      font-family: var(--mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      writing-mode: vertical-rl;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 1.2s;
+    }
+
+    .scroll-cue::after {
+      content: '';
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(var(--ink-faint), transparent);
+    }
+
+    /* ── TWO-COL ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid var(--border);
+    }
+
+    .two-col>.col {
+      padding: 5rem var(--pad);
+    }
+
+    .two-col>.col:first-child {
+      border-right: 1px solid var(--border);
+      padding-left: 0;
+    }
+
+    .two-col>.col:last-child {
+      padding-right: 0;
+    }
+
+    /* ── WHY ITEMS ── */
+    .why-items {
+      border-top: 1px solid var(--border-lt);
+      margin-top: 0.5rem;
+    }
+
+    .why-item {
+      display: grid;
+      grid-template-columns: 2.5rem 1fr;
+      gap: 0 1.5rem;
+      padding: 1.6rem 0;
+      border-bottom: 1px solid var(--border-lt);
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .why-item.vis {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .why-n {
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      color: var(--ink-faint);
+      line-height: 1.65;
+      font-weight: 400;
+    }
+
+    .why-text {
+      font-size: 1rem;
+      color: var(--ink-mid);
+      line-height: 1.75;
+    }
+
+    /* ── FULL SECTION ── */
+    .full-sec {
+      padding: 5.5rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── MATCH TABLE ── */
+    .match-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+    }
+
+    .match-table thead tr {
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .match-table th {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      padding: 0 1.5rem 0.85rem 0;
+      text-align: left;
+      font-weight: 400;
+    }
+
+    .match-table th:last-child {
+      padding-right: 0;
+    }
+
+    .match-table td {
+      padding: 1.1rem 1.5rem 1.1rem 0;
+      vertical-align: top;
+      border-bottom: 1px solid var(--border-lt);
+      font-size: 0.93rem;
+      line-height: 1.65;
+    }
+
+    .match-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .match-table tr:hover td {
+      background: rgba(45, 107, 88, 0.025);
+    }
+
+    .match-table td:first-child {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink);
+      white-space: nowrap;
+      width: 25%;
+      padding-right: 2rem;
+    }
+
+    .match-table td:last-child {
+      color: var(--ink-mid);
+    }
+
+    /* ── POW GRID ── */
+    .pow-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--border);
+      border-left: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    .pow-card {
+      padding: 2rem 1.75rem;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--parchment);
+      transition: background 0.25s;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .pow-card.vis {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .pow-card:hover {
+      background: var(--teal-bg);
+    }
+
+    .pow-card.featured {
+      grid-column: span 3;
+      background: var(--parchment2);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 3rem;
+      align-items: start;
+    }
+
+    .pow-card.featured:hover {
+      background: var(--teal-bg);
+    }
+
+    .pow-tag {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.56rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.75rem;
+    }
+
+    .pow-title {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.25;
+      margin-bottom: 0.75rem;
+    }
+
+    .pow-desc {
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: var(--ink-light);
+      margin-bottom: 0;
+    }
+
+    .pow-link {
+      display: inline-block;
+      margin-top: 1rem;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--teal);
+      border-bottom: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+
+    .pow-link:hover {
+      border-color: var(--teal);
+    }
+
+    /* ── POLYMATH ── */
+    .poly-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border-top: none;
+    }
+
+    .poly-grid>.col:first-child {
+      padding: 0 var(--pad) 0 0;
+      border-right: 1px solid var(--border);
+    }
+
+    .poly-grid>.col:last-child {
+      padding: 0 0 0 var(--pad);
+    }
+
+    .role-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 2rem;
+    }
+
+    .pill {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.42rem 0.9rem;
+      border: 1px solid var(--border);
+      color: var(--ink-light);
+    }
+
+    .pill.hi {
+      border-color: var(--teal);
+      color: var(--teal);
+      background: var(--teal-bg);
+    }
+
+    /* ── WRITING ── */
+    .writing-list {
+      margin-top: 1.5rem;
+    }
+
+    .w-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border-lt);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .w-item:first-child {
+      border-top: 1px solid var(--border-lt);
+    }
+
+    .w-item:hover .w-arr {
+      opacity: 1;
+      color: var(--teal);
+    }
+
+    .w-title {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+    }
+
+    .w-desc {
+      font-size: 0.9rem;
+      color: var(--ink-light);
+      line-height: 1.65;
+    }
+
+    .w-arr {
+      color: var(--border);
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      opacity: 0.5;
+      transition: all 0.2s;
+      margin-top: 0.15rem;
+    }
+
+    /* ── PULL QUOTE ── */
+    .pq-section {
+      background: var(--parchment2);
+      border-top: 1px solid var(--border);
+      padding: 5.5rem 0;
+    }
+
+    .pq-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    .pq-line {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: clamp(1.25rem, 2.8vw, 1.9rem);
+      color: var(--ink);
+      line-height: 1.4;
+      margin-bottom: 1.5rem;
+      position: relative;
+      padding-left: 2.5rem;
+    }
+
+    .pq-line::before {
+      content: '"';
+      font-family: var(--serif);
+      font-size: 5rem;
+      color: var(--teal);
+      opacity: 0.2;
+      position: absolute;
+      left: -0.3rem;
+      top: -1.2rem;
+      line-height: 1;
+    }
+
+    .pq-body {
+      font-size: 1rem;
+      color: var(--ink-mid);
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+      padding-left: 2.5rem;
+    }
+
+    .pq-attr {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      padding-left: 2.5rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink);
+      color: var(--parchment);
+      padding: 4rem 0;
+    }
+
+    .footer-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--pad);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 3rem;
+      align-items: end;
+    }
+
+    .footer-msg {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--parchment2);
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .footer-links a {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      border: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--parchment);
+      border: none;
+    }
+
+    .footer-proof {
+      font-family: var(--mono);
+      font-size: 0.54rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+
+    .footer-cta {
+      display: inline-block;
+      padding: 0.9rem 2rem;
+      background: var(--teal);
+      color: var(--parchment);
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .footer-cta:hover {
+      background: var(--teal-hi);
+      border: none;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .two-col>.col:first-child {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding-left: 0;
+        padding-bottom: 3.5rem;
+      }
+
+      .two-col>.col:last-child {
+        padding-top: 3.5rem;
+        padding-right: 0;
+      }
+
+      .pow-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .pow-card.featured {
+        grid-column: span 2;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .poly-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .poly-grid>.col:first-child {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding-right: 0;
+        padding-bottom: 2.5rem;
+      }
+
+      .poly-grid>.col:last-child {
+        padding-left: 0;
+        padding-top: 2.5rem;
+      }
+
+      .footer-inner {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+
+      .nav-links,
+      .nav-apply {
+        display: none;
+      }
+
+      .nav-toggle {
+        display: flex;
+      }
+
+      .pow-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pow-card.featured {
+        grid-column: span 1;
+      }
+
+      .hero-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 3rem;
+      }
+
+      .scroll-cue {
+        display: none;
+      }
+
+      .match-table td:first-child {
+        font-size: 0.58rem;
+        white-space: normal;
+        width: 32%;
+        padding-right: 1rem;
+      }
+
+      .w-item {
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .w-arr {
+        display: none;
+      }
+
+      .pq-line {
+        padding-left: 1.5rem;
+      }
+
+      .pq-body,
+      .pq-attr {
+        padding-left: 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <a class="nav-logo" href="#hero">Rohit Nalluri<span>Copenhagen &nbsp;·&nbsp; +91 97419 00347 (WhatsApp)
+        &nbsp;·&nbsp; rohit.k.nalluri@gmail.com</span></a>
+    <ul class="nav-links">
+      <li><a href="#why-ut">Why UT</a></li>
+      <li><a href="#the-match">The Match</a></li>
+      <li><a href="#proof-of-work">Proof of Work</a></li>
+      <li><a href="#polymath">The Angle</a></li>
+      <li><a href="#writing">Writing</a></li>
+    </ul>
+    <a class="nav-apply" href="https://www.linkedin.com/in/rohit-nalluri/" target="_blank">My LinkedIn
+      →</a>
+    <button class="nav-toggle" id="navToggle"><span></span><span></span><span></span></button>
+  </nav>
+
+  <div class="mobile-drawer" id="mobileDrawer">
+    <a href="#why-ut" onclick="closeNav()">Why UT</a>
+    <a href="#the-match" onclick="closeNav()">The Match</a>
+    <a href="#proof-of-work" onclick="closeNav()">Proof of Work</a>
+    <a href="#polymath" onclick="closeNav()">The Polymathic Angle</a>
+    <a href="#writing" onclick="closeNav()">Writing</a>
+    <a href="https://hiring-landing-page-plum.vercel.app/careers.html" target="_blank">Apply at UT →</a>
+  </div>
+
+  <div class="page">
+
+    <!-- HERO -->
+    <section id="hero">
+      <div class="wrap">
+        <svg class="hero-dragon" viewBox="0 0 500 420" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="300" cy="210" r="160" fill="none" stroke="#6b4a20" stroke-width="1.5" />
+          <circle cx="300" cy="210" r="128" fill="none" stroke="#6b4a20" stroke-width="0.8" />
+          <ellipse cx="300" cy="210" rx="160" ry="58" fill="none" stroke="#6b4a20" stroke-width="0.6" />
+          <ellipse cx="300" cy="210" rx="160" ry="110" fill="none" stroke="#6b4a20" stroke-width="0.5" />
+          <line x1="148" y1="210" x2="452" y2="210" stroke="#6b4a20" stroke-width="0.6" />
+          <line x1="300" y1="58" x2="300" y2="362" stroke="#6b4a20" stroke-width="0.6" />
+          <path
+            d="M130,190 C160,125 215,95 275,105 C335,115 375,158 382,210 C389,262 358,302 305,312 C252,322 198,290 175,250"
+            fill="none" stroke="#6b4a20" stroke-width="2.2" />
+          <path d="M130,190 C110,168 105,138 120,116 C135,94 160,92 172,106" fill="none" stroke="#6b4a20"
+            stroke-width="2" />
+          <path d="M208,148 C188,104 146,84 104,95 C146,100 172,122 180,150" fill="none" stroke="#6b4a20"
+            stroke-width="1.5" />
+          <path d="M290,138 C312,90 355,76 394,86 C357,94 326,118 316,142" fill="none" stroke="#6b4a20"
+            stroke-width="1.5" />
+          <path d="M175,250 C154,272 150,298 162,320 C174,342 196,347 212,336 C200,324 190,308 196,290" fill="none"
+            stroke="#6b4a20" stroke-width="1.5" />
+        </svg>
+
+        <div class="hero-meta">
+          <span class="hero-badge">Researcher / Writer — Application Dossier</span>
+        </div>
+        <div class="hero-name">
+          <h1>Rohit<br>Nalluri</h1>
+        </div>
+        <p class="hero-sub">Entrepreneur's Mind. Athlete's Body. Artist's Soul.</p>
+        <p class="hero-role">Applying for Uncharted Territories — April 2026</p>
+        <div class="scroll-cue">Scroll</div>
+      </div>
+    </section>
+
+    <!-- WHY UT + WHY ME -->
+    <div class="two-col wrap" id="why-ut">
+      <div class="col">
+        <span class="sec-num">01. Why Uncharted Territories</span>
+        <h2>Why I want to be here</h2>
+        <div class="why-items">
+          <div class="why-item">
+            <span class="why-n">I</span>
+            <p class="why-text">UT got me into Substack and inspired me to launch my own — The Polymathic Pursuit. It
+              was proof that longform, data-driven curiosity could find its audience.</p>
+          </div>
+          <div class="why-item">
+            <span class="why-n">II</span>
+            <p class="why-text">UT is the perfect blend of geography, history, and curiosity I've ever come across, in
+              my favourite reading format: longform. Driven by data. Always asking one question — why?</p>
+          </div>
+          <div class="why-item">
+            <span class="why-n">III</span>
+            <p class="why-text">Uncharted Territories represents the juicy, shadowy mystery in a world quickly
+              unraveling its last secrets. UT is an outpost at the edge of the known universe, looking out at the
+              unknown with the binoculars of AI and data. I wish to live in this outpost. Heck, I live there right now —
+              for my Substack, for my AI explorations, for the sake of my own infinite curiosity.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <span class="sec-num">02. Why Me</span>
+        <h2>What I bring to the expedition</h2>
+        <p>I'm a Product Owner in the Financial Crime Prevention area at Danske Bank, Copenhagen — nearly 20 years
+          across IBM,
+          Sony, Baxter Healthcare. I understand how complex systems work and how to communicate them to people who
+          don't. But that's not why I'm right for this.</p>
+        <p>I'm right for this because I've been building the UT playbook independently, at 1/10th the cost and time, for
+          India.</p>
+        <p>My Substack runs India Positive: data-first geopolitical analysis in the Pueyo mold. The digital products I'm
+          designing for it go well beyond articles — interactive research pieces where the piece functions as software,
+          not an essay, 3d models of article subjects that can be 3d printed, podcasts fine-tuned for different Indian
+          languages! This is the direction I believe serious media is heading. I've been building toward it before
+          reading your April 7 article, but it confirmed that I'm on the right track.</p>
+        <p>I'm not applying to fill a seat. I'm applying because the outpost you're building is the one I've been trying
+          to construct alone. I'd rather build it with you.</p>
+      </div>
+    </div>
+
+    <!-- THE MATCH -->
+    <section class="full-sec" id="the-match">
+      <div class="wrap">
+        <span class="sec-num">03. The Right Kind of Builder</span>
+        <h2>You outlined 11 criteria for who fits UT.<br>Here is my honest answer to each.</h2>
+        <table class="match-table">
+          <thead>
+            <tr>
+              <th>Criterion</th>
+              <th>Why I fit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Missionaries</td>
+              <td>I launched my Substack inspired by Uncharted Territories. And I continue to build it while on Parental
+                Leave using just my phone
+                (Claude Code, Remote Control, Dispatch and a custom AI agent chatting with me via Telegram) with no
+                audience payoff yet. I have a senior role at Danske Bank — I'm not here chasing a paycheck. This is
+                belief in the mission.</td>
+            </tr>
+            <tr>
+              <td>Owner Mindset</td>
+              <td>I didn't wait for tools to exist — I built a 31-piece cross-posting engine, interactive article
+                formats, and a personal AI orchestrator. Strong opinions about what good looks like, and I execute on
+                them without being asked.</td>
+            </tr>
+            <tr>
+              <td>Bias for Action</td>
+              <td>On parental leave, working 2 hours a day, vibecoding and researching from a phone. The output still
+                exists. Bias for
+                action isn't a trait for me — it's a survival skill.</td>
+            </tr>
+            <tr>
+              <td>Speed & Results</td>
+              <td>Guerrilla Engineering: 1/10th the cost and time. Physibles generated real revenue. The cross-posting
+                engine produces 31 assets from one article link. I measure against outputs, not effort.</td>
+            </tr>
+            <tr>
+              <td>Fast Learner</td>
+              <td>GIS mapping at 17. AWS Certified Solutions Architect. IBM, Sony, Baxter, Danske Bank. SaaS on Next.js,
+                Supabase, Vercel. Vibecoding
+                during parental leave using custom-built AI agents so the work still gets done.</td>
+            </tr>
+            <tr>
+              <td>High Standards</td>
+              <td>Published writer. 140+ poems. Certified Cloud Solutions Architect. Product Owner in AML/CTF — one
+                of the highest-accountability domains in banking. I care deeply about the process and the results.</td>
+            </tr>
+            <tr>
+              <td>Vibe Coding Mindset</td>
+              <td>Already doing it. Live products: BabelBridge (AI lip sync SaaS), Quotable (RAG quote tool), Arkane
+                (personal AI orchestrator built as a Substack assistant). Not learning this — already doing it.</td>
+            </tr>
+            <tr>
+              <td>Field Passion</td>
+              <td>Four Substack sections. Six AI products in parallel. A newsletter, a blog, a novel in
+                progress. This is not only my professional interest. This is my identity.</td>
+            </tr>
+            <tr>
+              <td>Small Team Preference</td>
+              <td>Functionally a team of one building multiple products simultaneously. No patience for org-chart
+                politics. My entire philosophy is built around small, fast, scalable output.</td>
+            </tr>
+            <tr>
+              <td>Allergic to Politics</td>
+              <td>I've built a personal compass for getting things done without getting bogged down in politics. My
+                output record
+                across parental leave alone makes the case.</td>
+            </tr>
+            <tr>
+              <td>Europe-Based</td>
+              <td>Copenhagen, Denmark. Same timezone. No logistics friction.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PROOF OF WORK -->
+    <section class="full-sec" id="proof-of-work">
+      <div class="wrap">
+        <span class="sec-num">04. Proof of Work</span>
+        <h2>What I've built, matched to what UT is building.</h2>
+        <div class="pow-grid">
+          <div class="pow-card featured">
+            <div>
+              <span class="pow-tag">[Content] Interactive Research</span>
+              <p class="pow-title">The Gallium White Paper</p>
+              <p class="pow-desc">A fully interactive HTML research piece on India's gallium extraction opportunity —
+                embedded charts, scenario modeling, structured for paying and free readers. The piece functions as
+                software, not an essay. This lines up with the "articles as software" direction you outlined April 7.
+                This gallium piece is the first of many I plan to offer. Built with: Opus for
+                analysis, Sonnet for prose, NotebookLM for fact validation.</p>
+              <a class="pow-link" href="gallium.html" target="_blank">Read the white paper →</a>
+            </div>
+            <div>
+              <span class="pow-tag">[Why it matters]</span>
+              <p class="pow-title">The strongest single proof of what I can produce for UT</p>
+              <p class="pow-desc">This is the format I'm developing for India Positive paying subscribers. It is not a
+                prototype — it is a complete, standalone interactive document. The fact that it exists, built during
+                parental leave on a phone, is part of my case.</p>
+            </div>
+          </div>
+          <div class="pow-card">
+            <span class="pow-tag">[Content] Substack</span>
+            <p class="pow-title">The Polymathic Pursuit</p>
+            <p class="pow-desc">Four active sections: India Positive (data-first geopolitics), Shadow Portraits,
+              Aithropocene, The Wanderer. The Pueyo mold applied to India — why things are the way they are, what forces
+              made them so. Data-driven, desi, deep dives on Indian geopolitics, culture, and society.</p>
+            <a class="pow-link" href="https://read.rohitnalluri.com" target="_blank">read.rohitnalluri.com →</a>
+          </div>
+          <div class="pow-card">
+            <span class="pow-tag">[Distribution] Engine</span>
+            <p class="pow-title">Cross-Posting Engine</p>
+            <p class="pow-desc">A Claude Code skill generating 31 pieces of content across 7 platforms from a single
+              article link. You described this exact product in your April 7 article as something UT should build.
+              Already built.</p>
+          </div>
+          <div class="pow-card">
+            <span class="pow-tag">[Engineering] SaaS</span>
+            <p class="pow-title">BabelBridge</p>
+            <p class="pow-desc">AI dubbing and lip-sync SaaS. 29 languages. Neural voice preservation. Built in
+              Copenhagen on Next.js, Supabase, FastAPI, Vercel. Live pricing tiers, growth calculator, paying-tier
+              product.</p>
+            <a class="pow-link" href="https://babelbridge.vercel.app" target="_blank">babelbridge.vercel.app →</a>
+          </div>
+          <div class="pow-card">
+            <span class="pow-tag">[Brand] Merchandise</span>
+            <p class="pow-title">3D Design & Physibles</p>
+            <p class="pow-desc">Physibles: 3D-printed merchandise for NFT and blockchain gaming companies including
+              Zerpmon. Revenue: 10,000 DKK. Hands-on experience translating brand into physical products — directly
+              relevant to the UT shop.</p>
+          </div>
+          <div class="pow-card">
+            <span class="pow-tag">[Cartography] GIS</span>
+            <p class="pow-title">Maps from the Start</p>
+            <p class="pow-desc">First job at 17: digitizing flood hazard areas at a GIS mapping firm. First in my team
+              to use Google Maps in that workflow, replacing paper overlays. The curiosity about geography as causality
+              has never left.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- POLYMATH -->
+    <section class="full-sec" id="polymath">
+      <div class="wrap">
+        <span class="sec-num">05. The Polymathic Angle</span>
+        <div class="poly-grid">
+          <div class="col">
+            <h2>Why a polymath is the feature, not the bug.</h2>
+          </div>
+          <div class="col">
+            <p>Small teams at the frontier can't afford people who only do one thing. When a researcher can also build
+              the interactive tool that accompanies the article, when a writer can generate 31 pieces of distribution
+              from a single draft, when the cartographic instinct is baked into how research is framed — the output
+              compounds.</p>
+            <p>My skills don't sit in separate compartments. The GIS background informs how I think about geography as
+              causality. The memoir-writing shapes how data becomes narrative. The vibe coding means ideas don't wait
+              for an engineer. The merchandise experience means brand-to-physical is not theoretical.</p>
+            <p>This is not a claim of doing everything well. It is a claim of doing enough things well enough that the
+              intersections become the most valuable thing on a small, fast team.</p>
+            <div class="role-pills">
+              <span class="pill hi">Researcher / Writer</span>
+              <span class="pill hi">Vibe Coder</span>
+              <span class="pill">Cartographer</span>
+              <span class="pill">Head of Merchandise</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WRITING -->
+    <section class="full-sec" id="writing">
+      <div class="wrap">
+        <span class="sec-num">06. The Writing</span>
+        <h2>My Writings</h2>
+        <div class="writing-list">
+          <a class="w-item" href="https://www.goodreads.com/book/show/22415616-the-anatomy-of-journey" target="_blank">
+            <div>
+              <p class="w-title">The Anatomy of Journey</p>
+              <p class="w-desc">Published motorcycle memoir. Bangalore to Ladakh — 6,000 km, 15 days, five mountain
+                passes. A soul-quest into the geography of the self, published worldwide May 2014.</p>
+            </div>
+            <span class="w-arr">→</span>
+          </a>
+          <a class="w-item" href="https://read.rohitnalluri.com" target="_blank">
+            <div>
+              <p class="w-title">The Polymathic Pursuit</p>
+              <p class="w-desc">Four sections: India Positive, Shadow Portraits, Aithropocene, The Wanderer. Data-first
+                analysis, extinct species memorials, AI futures, poems and sci-fi fragments.</p>
+            </div>
+            <span class="w-arr">→</span>
+          </a>
+          <a class="w-item" href="https://rohitnalluri.com" target="_blank">
+            <div>
+              <p class="w-title">rohitnalluri.com</p>
+              <p class="w-desc">Blog spanning years — 140+ poems, short stories, essays, longform work. The archive of a
+                mind that has never stayed in one lane.</p>
+            </div>
+            <span class="w-arr">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PULL QUOTE -->
+    <div class="pq-section">
+      <div class="pq-inner">
+        <p class="pq-line">How high can you go? How much can you see? How far?</p>
+        <p class="pq-body">Mountains elevate us. They allow us to climb their bodies and look down upon the more
+          clarified view of the landscape beneath. They allow us to gain a perspective of the land, of lower altitudes,
+          of lower attitudes. Climbing a mountain is symbolic; the idea is to climb to the peaks of yourself. Mountains
+          challenge us. They say to us as we climb them slowly, that if there is but one purpose to life, then it must
+          be in the attempt of discovering the lay of the land by climbing to a higher elevation.</p>
+        <p class="pq-attr">— Rohit Nalluri, The Anatomy of Journey (2014)</p>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="footer-inner">
+        <div>
+          <p class="footer-msg">If you're Tomas, or someone from the UT team — thank you for reading this far.</p>
+          <div class="footer-links">
+            <a href="https://read.rohitnalluri.com" target="_blank">Substack</a>
+            <a href="https://rohitnalluri.com" target="_blank">Blog</a>
+            <a href="https://www.goodreads.com/book/show/22415616-the-anatomy-of-journey" target="_blank">The Book</a>
+            <a href="https://babelbridge.vercel.app" target="_blank">BabelBridge</a>
+            <a href="gallium.html" target="_blank">Gallium Paper</a>
+            <a href="mailto:rohit.k.nalluri@gmail.com">Email</a>
+          </div>
+          <p class="footer-proof">This page was built as part of the application for the role of Researcher/Writer at
+            Uncharted Territories.
+          </p>
+        </div>
+        <div>
+          <a class="footer-cta" href="mailto:rohit.k.nalluri@gmail.com">May I Join the
+            Expedition? →</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    const toggle = document.getElementById('navToggle');
+    const drawer = document.getElementById('mobileDrawer');
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('open');
+      drawer.classList.toggle('open');
+    });
+    function closeNav() {
+      toggle.classList.remove('open');
+      drawer.classList.remove('open');
+    }
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        setTimeout(() => e.target.classList.add('vis'), +(e.target.dataset.delay || 0));
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.why-item').forEach((el, i) => { el.dataset.delay = i * 120; io.observe(el); });
+    document.querySelectorAll('.pow-card').forEach((el, i) => { el.dataset.delay = i * 80; io.observe(el); });
+  </script>
+</body>
+
+</html>
